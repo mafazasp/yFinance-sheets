@@ -1,7 +1,10 @@
+import pandas as pd
+import yfinance as yf
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from pprint import pprint
 
+#connection
 scope =["https://spreadsheets.google.com/feeds",
         'https://www.googleapis.com/auth/spreadsheets',
         "https://www.googleapis.com/auth/drive.file",
@@ -11,16 +14,15 @@ credentials = ServiceAccountCredentials.from_json_keyfile_name(
    "credentials.json",
     scope
 )
-
 client = gspread.authorize(credentials)
 
-sheet = client.open("yFinance-sheets").sheet1
+#dataframes
+portfolioSheet = client.open("yFinance-sheets").worksheet("portfolio")
+tickers = pd.DataFrame(portfolioSheet.col_values(2)).iloc[3:]
 
-data = sheet.get_all_records()
+#yFinance_iteration
+for index, row in tickers.iterrows():
+    ticker = yf.Ticker(row.to_string())
+    financials = ticker.financials
+    print(ticker)
 
-row = sheet.row_values(3)
-
-insertRow = [1, "insert-test"]
-sheet.insert_row(row, 2)
-
-pprint(data)
